@@ -189,7 +189,3 @@ https://devguide.owasp.org/en/05-implementation/01-documentation/01-proactive-co
 - Top 10 = „Was ist gefährlich?“  
 - Proactive Controls = „Wie verhindere ich es?“
 
----
-
-# Ende des Recherche-Auftrags
-(Demonstration und Code folgen separat)
