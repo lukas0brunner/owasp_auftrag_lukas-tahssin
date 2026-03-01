@@ -1,0 +1,20 @@
+{
+  "name": "owasp-a01-coupon-race-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ultra-minimale Full-Stack-Demo fuer OWASP A01 Broken Access Control (Race Condition beim Coupon)",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.19.35",
+    "typescript": "^5.4.5"
+  }
+}

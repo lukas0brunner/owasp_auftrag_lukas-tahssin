@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shop Demo (OWASP A01)</title>
+  <style>
+    :root{
+      --bg:#f4f1ed;
+      --card:#ffffff;
+      --card2:#f8f6f4;
+      --text:#1b1b1d;
+      --muted:#6c6c72;
+      --border:rgba(0,0,0,.08);
+      --shadow: 0 16px 40px rgba(0,0,0,.08);
+      --radius: 16px;
+      --accent:#1f7a6b;
+      --accent2:#f4c95d;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(800px 420px at 15% 0%, rgba(31,122,107,.12), transparent 60%),
+        radial-gradient(900px 420px at 85% -10%, rgba(244,201,93,.18), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    header{
+      position: sticky; top:0;
+      backdrop-filter: blur(8px);
+      background: rgba(244,241,237,.85);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      z-index: 10;
+    }
+    .wrap{max-width: 980px; margin:0 auto; padding: 0 18px;}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:40px; height:40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #2aa38f);
+      box-shadow: var(--shadow);
+    }
+    h1{font-size: 20px; margin:0; letter-spacing:.2px;}
+    .subtitle{color:var(--muted); font-size: 13px; margin-top:2px}
+    .pill{
+      font-size: 12px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--muted);
+    }
+
+    main{padding: 26px 0 40px;}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px){
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .card h2{
+      margin:0 0 10px;
+      font-size: 16px;
+      color: #1d1d1f;
+    }
+    .muted{color:var(--muted)}
+    .product{
+      display:flex; gap:16px; align-items:stretch;
+    }
+    .thumb{
+      width: 200px; min-width: 200px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      overflow: hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .thumb img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .pinfo{flex:1}
+    .price{
+      font-size: 28px; font-weight: 800;
+      margin: 10px 0 6px;
+    }
+    .tagrow{display:flex; gap:8px; flex-wrap:wrap}
+    .tag{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: var(--muted);
+    }
+    .divider{
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+    .row{
+      display:flex; gap:10px; align-items:center;
+      margin-top: 12px;
+    }
+    input{
+      flex:1;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: var(--text);
+      outline: none;
+    }
+    input:focus{border-color: var(--accent)}
+    button{
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .04s ease, background .15s ease;
+      font-weight: 650;
+    }
+    button:hover{background: #efebe7}
+    button:active{transform: translateY(1px)}
+    .primary{
+      background: linear-gradient(135deg, var(--accent), #2aa38f);
+      border-color: rgba(31,122,107,.55);
+      color: #fff;
+    }
+    .primary:hover{background: linear-gradient(135deg, #1c6f62, #24927f)}
+    .danger{
+      background: rgba(239,68,68,.10);
+      border-color: rgba(239,68,68,.30);
+    }
+    .danger:hover{background: rgba(239,68,68,.16)}
+    .mini{padding: 10px 12px; font-size: 13px}
+
+    .summary h3{margin:0 0 12px; font-size: 15px}
+    .line{
+      display:flex; justify-content:space-between; gap:10px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(0,0,0,.08);
+      color: var(--muted);
+    }
+    .line strong{color: var(--text)}
+    .total{
+      display:flex; justify-content:space-between; align-items:baseline;
+      padding-top: 14px;
+      font-size: 14px;
+    }
+    .total .big{font-size: 28px; font-weight: 800}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius: 99px;
+      background: rgba(148,163,184,.8);
+      box-shadow: 0 0 0 4px rgba(148,163,184,.14);
+    }
+    .dot.ok{background: rgba(16,185,129,.9); box-shadow: 0 0 0 4px rgba(16,185,129,.14);}
+    .dot.bad{background: rgba(239,68,68,.9); box-shadow: 0 0 0 4px rgba(239,68,68,.14);}
+
+    pre{
+      margin: 12px 0 0;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      overflow:auto;
+      color: #2b2b2b;
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .toast{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      max-width: 420px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      display:none;
+    }
+    .toast.show{display:block}
+    .toast .t{font-weight: 750; margin-bottom: 4px}
+    .toast .m{color: var(--muted); font-size: 13px}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Shop Demo (OWASP A01)</h1>
+          <div class="subtitle">Race Condition Coupon • Broken Access Control</div>
+        </div>
+      </div>
+  <a href="https://ram.is" target="_blank" rel="noopener noreferrer" style="font-size:13px; color:var(--accent); text-decoration:none;">ram.is</a>
+      <div class="pill" id="modePill">MODE: …</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="grid">
+      <!-- Product -->
+      <section class="card">
+        <h2>Produkt</h2>
+        <div class="product">
+          <div class="thumb">
+            <img
+              id="productImage"
+              alt="Produktbild"
+              src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80"
+            />
+          </div>
+          <div class="pinfo">
+            <div style="font-weight:800; font-size:18px;">Test-Artikel</div>
+            <div class="muted" style="margin-top:4px;">Ein simples Produkt fuer die Live-Demo (Coupon-Race Condition).</div>
+
+            <div class="price"><span id="subtotalText">20</span> CHF</div>
+
+            <div class="tagrow">
+              <div class="tag">Coupon: TENOFF</div>
+              <div class="tag">Discount: 10 CHF</div>
+              <div class="tag">1x pro User</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="muted" style="font-size:13px;">
+          Ziel: Coupon darf nur 1x genutzt werden. Mit parallelen Requests kann er mehrfach applied werden (vuln-mode).
+        </div>
+
+        <div class="row">
+          <input id="couponInput" value="TENOFF" autocomplete="off" />
+          <button class="primary" id="applyBtn">Apply coupon</button>
+        </div>
+
+        <div class="row">
+          <button class="danger mini" id="resetBtn">Reset</button>
+          <div class="badge" id="statusBadge">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">Bereit</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="margin-top:0;">Cart JSON (Debug)</h2>
+        <pre id="cartJson">{}</pre>
+      </section>
+
+      <!-- Summary -->
+      <aside class="card summary">
+        <h2>Checkout</h2>
+
+        <div class="line"><span>Subtotal</span><strong><span id="sSubtotal">0</span> CHF</strong></div>
+        <div class="line"><span>Discount</span><strong>- <span id="sDiscount">0</span> CHF</strong></div>
+        <div class="total">
+          <span class="muted">Total</span>
+          <span class="big"><span id="sTotal">0</span> CHF</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Applied Coupons</h3>
+        <div class="muted" id="appliedList" style="min-height:24px;">—</div>
+
+        <div class="divider"></div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+  <div class="toast" id="toast">
+  <div class="t" id="toastTitle">Info</div>
+  <div class="m" id="toastMsg">…</div>
+</div>
+
+<script>
+  const userId = "u1";
+
+  const el = (id) => document.getElementById(id);
+  const cartJson = el("cartJson");
+  const couponInput = el("couponInput");
+  const applyBtn = el("applyBtn");
+  const resetBtn = el("resetBtn");
+
+  const sSubtotal = el("sSubtotal");
+  const sDiscount = el("sDiscount");
+  const sTotal = el("sTotal");
+  const subtotalText = el("subtotalText");
+  const appliedList = el("appliedList");
+
+  const statusDot = el("statusDot");
+  const statusText = el("statusText");
+  const modePill = el("modePill");
+
+  const toast = el("toast");
+  const toastTitle = el("toastTitle");
+  const toastMsg = el("toastMsg");
+  let toastTimer;
+
+  function showToast(title, msg, type="ok"){
+    toastTitle.textContent = title;
+    toastMsg.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>toast.classList.remove("show"), 2600);
+    setStatus(type === "ok" ? "ok" : "bad", title);
+  }
+
+  function setStatus(type, text){
+    statusDot.classList.remove("ok","bad");
+    if(type === "ok") statusDot.classList.add("ok");
+    if(type === "bad") statusDot.classList.add("bad");
+    statusText.textContent = text;
+  }
+
+  async function loadMode(){
+    // Optional: falls dein Backend /mode liefert, sonst einfach "unknown" anzeigen
+    try{
+      const r = await fetch("/mode");
+      if(!r.ok) throw new Error("no mode");
+      const data = await r.json();
+      modePill.textContent = "MODE: " + (data.mode || "unknown");
+    }catch{
+      modePill.textContent = "MODE: (set by ENV)";
+    }
+  }
+
+  async function loadCart(){
+    const r = await fetch(`/cart?userId=${encodeURIComponent(userId)}`);
+    const data = await r.json();
+    cartJson.textContent = JSON.stringify(data, null, 2);
+
+    sSubtotal.textContent = data.subtotal ?? 0;
+    sDiscount.textContent = data.discount ?? 0;
+    sTotal.textContent = data.total ?? 0;
+    subtotalText.textContent = data.subtotal ?? 0;
+
+    if(Array.isArray(data.appliedCoupons) && data.appliedCoupons.length){
+      appliedList.textContent = data.appliedCoupons.join(", ");
+    } else {
+      appliedList.textContent = "—";
+    }
+  }
+
+  async function applyCoupon(){
+    const code = couponInput.value.trim();
+    if(!code) return showToast("Fehler", "Bitte Coupon-Code eingeben.", "bad");
+
+    applyBtn.disabled = true;
+    setStatus("", "Request laeuft…");
+    try{
+      const r = await fetch("/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, code })
+      });
+      const data = await r.json().catch(()=> ({}));
+
+      if(!r.ok){
+        showToast("Abgelehnt", data.error || "Coupon konnte nicht angewendet werden.", "bad");
+      } else {
+        showToast("Erfolg", "Coupon wurde angewendet.", "ok");
+      }
+      await loadCart();
+    } catch (e){
+      showToast("Fehler", "Backend nicht erreichbar.", "bad");
+    } finally {
+      applyBtn.disabled = false;
+    }
+  }
+
+  async function resetAll(){
+    resetBtn.disabled = true;
+    setStatus("", "Reset…");
+    try{
+      const r = await fetch("/reset", { method:"POST" });
+      await r.json().catch(()=> ({}));
+      showToast("Reset", "Demo-Zustand wurde zurueckgesetzt.", "ok");
+      await loadCart();
+    } catch {
+      showToast("Fehler", "Reset fehlgeschlagen.", "bad");
+    } finally {
+      resetBtn.disabled = false;
+    }
+  }
+
+  applyBtn.addEventListener("click", applyCoupon);
+  resetBtn.addEventListener("click", resetAll);
+
+  loadMode();
+  loadCart();
+</script>
+</body>
+</html>
