@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OWASP A05 Injection Demo</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="wrap">
+    <h1>OWASP A05:2025 – Injection (SQLi) Demo</h1>
+    <p class="muted">
+        Diese Seite ist absichtlich verwundbar (nur für Unterricht/Demo).
+    </p>
+</header>
+
+<main class="wrap grid">
+    <section class="card">
+        <h2>1) Login (absichtlich UNSAFE)</h2>
+        <p class="muted">
+            Normale Logins: alice/alice123 (user), bob/bob123 (admin), charlie/charlie123 (user)
+        </p>
+
+        <form id="loginForm" class="form">
+            <label>
+                Username
+                <input name="username" placeholder="z.B. alice" autocomplete="off" />
+            </label>
+            <label>
+                Password
+                <input name="password" placeholder="z.B. alice123" autocomplete="off" />
+            </label>
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="hint">
+            <strong>PoC (harmlos):</strong>
+            <code>username = ' OR '1'='1' --</code> und irgend ein Passwort<br/>
+            Erwartung: Login wird plötzlich erfolgreich (SQLi).
+        </div>
+
+        <div class="row">
+            <div>
+                <h3>Status</h3>
+                <pre id="loginOut">Noch nicht eingeloggt.</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>2) User-Suche (absichtlich UNSAFE)</h2>
+        <form id="searchForm" class="form">
+            <label>
+                Suchbegriff
+                <input name="q" placeholder="z.B. ali" autocomplete="off" />
+            </label>
+            <button type="submit">Suchen</button>
+        </form>
+
+        <div class="hint">
+            <strong>PoC:</strong>
+            <code>q = ' OR 1=1 --</code><br/>
+            Erwartung: es kommen alle User zurück.
+        </div>
+
+        <h3>Result</h3>
+        <pre id="searchOut">Noch keine Suche.</pre>
+    </section>
+
+    <section class="card">
+        <h2>3) Admin Panel (sollte geschützt sein)</h2>
+        <p class="muted">
+            Dieses Panel erlaubt Zugriff nur wenn du als <code>admin</code> eingeloggt bist.
+            Nach SQLi-Login kannst du evtl. als Admin “durchrutschen”.
+        </p>
+
+        <button id="adminBtn">Admin API aufrufen</button>
+        <pre id="adminOut">Noch nicht aufgerufen.</pre>
+    </section>
+
+    <section class="card">
+        <h2>Was soll ich erklären?</h2>
+        <ul>
+            <li><strong>Root Cause:</strong> User-Input wird in SQL-String eingebaut.</li>
+            <li><strong>Impact:</strong> Login umgehen / Daten ausweiten.</li>
+            <li><strong>Fix:</strong> Prepared Statements / Parameter Binding (im Backend auskommentiert).</li>
+        </ul>
+        <p class="muted">
+            Hinweis: Debug-SQL wird hier absichtlich angezeigt, damit man im Unterricht sieht, was passiert.
+            In echten Apps wäre das selbst ein Sicherheitsproblem.
+        </p>
+    </section>
+</main>
+
+<script src="./app.js"></script>
+</body>
+</html>

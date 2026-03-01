@@ -1,0 +1,92 @@
+:root {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #0b0f14;
+    color: #e9eef5;
+}
+
+.wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 18px;
+}
+
+header h1 {
+    margin: 0 0 6px 0;
+    font-size: 22px;
+}
+
+.muted {
+    opacity: 0.75;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 900px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .grid section:nth-child(3) { grid-column: 1 / -1; }
+}
+
+.card {
+    background: #111a24;
+    border: 1px solid #1e2a38;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.form {
+    display: grid;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+label {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #2b3a4d;
+    background: #0c131c;
+    color: #e9eef5;
+}
+
+button {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #2b3a4d;
+    background: #162233;
+    color: #e9eef5;
+    cursor: pointer;
+}
+
+button:hover {
+    filter: brightness(1.08);
+}
+
+pre {
+    background: #0c131c;
+    border: 1px solid #223043;
+    border-radius: 12px;
+    padding: 10px;
+    overflow: auto;
+}
+
+.hint {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px dashed #2b3a4d;
+    background: #0c131c;
+    font-size: 13px;
+}
