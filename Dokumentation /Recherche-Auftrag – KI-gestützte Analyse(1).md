@@ -220,16 +220,32 @@ Diese zeigt, wie man den Fehler verhindern kann, zum Beispiel mit atomischen Upd
 Für die Recherche wurden diese Prompts verwendet:
 
 **Prompt 1**  
-Explain the relationship between CWE and OWASP Top 10\.
+ Erkläre den Zusammenhang zwischen CWE und OWASP Top 10\.
+
+---
 
 **Prompt 2**  
- What is the difference between OWASP Top 10 and OWASP Proactive Controls?
+ Was ist der Unterschied zwischen OWASP Top 10 und OWASP Proactive Controls?
+
+---
 
 **Prompt 3**  
- Which CWE is related to race conditions in web applications?
+ Welche CWE ist mit Race Conditions in Webanwendungen verbunden?
+
+---
 
 **Prompt 4**  
- Under which OWASP category can a coupon race condition fall?
+ Unter welche OWASP-Kategorie kann eine Coupon-Race-Condition fallen?
+
+---
+
+**Prompt 5**  
+ Gehören Race Conditions zu Broken Access Control?
+
+---
+
+**Prompt 6**  
+ Ab wann gehören Race Conditions zu Broken Access Control und ab wann zu Mishandling of Exceptional Conditions?
 
 ---
 
