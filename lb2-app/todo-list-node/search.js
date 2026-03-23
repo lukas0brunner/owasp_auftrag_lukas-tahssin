@@ -1,18 +1,25 @@
 const axios = require('axios');
 const querystring = require('querystring');
+const { toInt } = require('./fw/security');
 
 async function getHtml(req) {
-    if (req.body.provider === undefined || req.body.terms === undefined || req.body.userid === undefined){
+    if (req.body.provider === undefined || req.body.terms === undefined){
         return "Not enough information provided";
     }
 
-    let provider = req.body.provider;
-    let terms = req.body.terms;
-    let userid = req.body.userid;
+    // allow only known provider to prevent SSRF/open redirect style abuse
+    const provider = req.body.provider === '/search/v2/' ? '/search/v2/' : null;
+    if (!provider) return 'Invalid provider';
+
+    let terms = String(req.body.terms);
+    if (!terms || terms.length > 50) return 'Invalid search term';
+
+    // never trust user-supplied userid
+    const userid = req.session.user.id;
 
     await sleep(1000); // this is a long, long search!!
 
-    let theUrl='http://localhost:3000'+provider+'?userid='+userid+'&terms='+terms;
+    let theUrl='http://localhost:3000'+provider+'?userid='+encodeURIComponent(userid)+'&terms='+encodeURIComponent(terms);
     let result = await callAPI('GET', theUrl, false);
     return result;
 }

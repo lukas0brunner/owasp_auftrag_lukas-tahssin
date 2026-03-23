@@ -5,17 +5,24 @@ const dbConfig = require('../config');
 async function connectDB() {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        console.log('Database connected');
         return connection;
     } catch (error) {
         console.error('Error connecting to database:', error);
     }
 }
 
-async function executeStatement(statement) {
-    let conn = await connectDB();
-    const [results, fields] = await conn.query(statement);
-    return results;
+async function executeStatement(statement, params = []) {
+    const conn = await connectDB();
+    try {
+        const [results] = await conn.execute(statement, params);
+        return results;
+    } finally {
+        try {
+            await conn.end();
+        } catch (_) {
+            // ignore
+        }
+    }
 }
 
 module.exports = { connectDB: connectDB, executeStatement: executeStatement };

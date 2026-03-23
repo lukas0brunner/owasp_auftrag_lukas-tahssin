@@ -31,10 +31,9 @@ function getHtml(req) {
             submitHandler: function (form) {
                 provider = $("#searchurl").val();
                 terms = $("#terms").val();
-                userid = `+req.cookies.userid+`;
                 $("#msg").show();
                 $("#result").html("");
-                $.post("search", { provider: provider, terms: terms, userid: userid }, function(data){
+                $.post("search", { provider: provider, terms: terms }, function(data){
                     console.log(data);
                     $("#result").html(data);
                     $("#msg").hide(500);
