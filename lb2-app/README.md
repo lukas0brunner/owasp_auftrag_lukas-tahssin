@@ -14,12 +14,47 @@ Der include-Befehl in den YAML-Files steht erst ab der Docker Compose Version 2.
 
 Wichtig: der Port 80 muss auf Ihrem Lokalen Rechner zur Verfügung stehen. Wird dieser bereits verwendet, können Sie in der `compose.php.yaml` respektive in der `compose.node.yaml` den Port so anpassen, dass die Applikation auf einem anderen Port wie dem Port 80 zur Verfügung steht.
 
-## How to set up
+## Setup & Run (NodeJS / Docker)
 
-```
-cd /Users/tahssin-val/Projects/owasp_auftrag_lukas-tahssin/lb2-app/docker && docker compose -f compose.node.yaml up --build
-```
+Die Docker-Konfiguration in diesem Repo ist für die NodeJS-Variante bereits vorbereitet.
 
-```
+1) Container starten (Build inklusive)
+
+```bash
+cd lb2-app/docker
 docker compose -f compose.node.yaml up --build
+```
+
+2) App öffnen
+
+- Standardmässig läuft die App auf: http://localhost:8080
+
+> Hinweis: Falls der Port belegt ist, kann er in `lb2-app/docker/compose.node.yaml` angepasst werden.
+
+### Container stoppen
+
+```bash
+cd lb2-app/docker
+docker compose -f compose.node.yaml down
+```
+
+## Setup & Run (NodeJS / lokal ohne Docker)
+
+Voraussetzungen: Node.js (LTS empfohlen) + eine laufende MySQL/MariaDB (oder Docker nur für DB).
+
+```bash
+cd lb2-app/todo-list-node
+npm install
+npm start
+```
+
+Die App läuft dann typischerweise auf http://localhost:3000 (siehe `PORT` in `app.js`).
+
+## Tests
+
+Es sind Minimal-Regressionstests (RBAC/Access-Control) vorhanden.
+
+```bash
+cd lb2-app/todo-list-node
+npm test
 ```
