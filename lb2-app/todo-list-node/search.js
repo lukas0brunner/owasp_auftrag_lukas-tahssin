@@ -1,6 +1,4 @@
-const axios = require('axios');
-const querystring = require('querystring');
-const { toInt } = require('./fw/security');
+const searchProvider = require('./search/v2/index');
 
 async function getHtml(req) {
     if (req.body.provider === undefined || req.body.terms === undefined){
@@ -17,70 +15,17 @@ async function getHtml(req) {
     // never trust user-supplied userid
     const userid = req.session.user.id;
 
-    await sleep(1000); // this is a long, long search!!
-
-    let theUrl='http://localhost:3000'+provider+'?userid='+encodeURIComponent(userid)+'&terms='+encodeURIComponent(terms);
-    let result = await callAPI('GET', theUrl, false);
-    return result;
-}
-
-async function callAPI(method, url, data){
-    let noResults = 'No results found!';
-    let result;
-
-    switch (method){
-        case "POST":
-            if (data) {
-                result = await axios.post(url, data)
-                    .then(response => {
-                        return response.data;
-                    })
-                    .catch(error => {
-                        return noResults;
-                    });
-            } else {
-                result = await axios.post(url)
-                    .then(response => {
-                        return response.data;
-                    })
-                    .catch(error => {
-                        return noResults;
-                    });
-            }
-            break;
-        case "PUT":
-            if (data) {
-                result = await axios.put(url, data)
-                    .then(response => {
-                        return response.data;
-                    })
-                    .catch(error => {
-                        return noResults;
-                    });
-            } else {
-                result = await axios.put(url)
-                    .then(response => {
-                        return response.data;
-                    })
-                    .catch(error => {
-                        return noResults;
-                    });
-            }
-            break;
-        default:
-            if (data)
-                url = url+'?'+querystring.stringify(data);
-
-            result = await axios.get(url)
-                .then(response => {
-                    return response.data;
-                })
-                .catch(error => {
-                    return noResults;
-                });
+    // Optional demo delay (avoid availability issues in normal runs)
+    if (process.env.DEMO_SLOW_SEARCH === '1') {
+        await sleep(1000);
     }
 
-    return result ? result : noResults;
+    // Avoid HTTP self-call (DoS/SSRF-like pattern). Call provider directly.
+    // Provider reads authorization from session anyway.
+    return await searchProvider.search({
+        ...req,
+        query: { userid, terms }
+    });
 }
 
 function sleep(ms) {

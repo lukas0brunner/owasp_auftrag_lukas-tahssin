@@ -1,5 +1,5 @@
 const db = require('./fw/db');
-const { escapeHtml, issueCsrfToken } = require('./fw/security');
+const { escapeHtml, issueCsrfToken, verifyCsrf } = require('./fw/security');
 
 // Simple in-memory rate limit (good for LB2 demo; use Redis in prod)
 const loginAttempts = new Map();
@@ -23,6 +23,12 @@ function canAttemptLogin(req) {
 
 async function handleLogin(req) {
     let msg = '';
+
+    // CSRF protection for login to prevent login-CSRF / session confusion
+    if (!verifyCsrf(req)) {
+        msg = "<span class='info info-error'>Invalid CSRF token</span>";
+        return { ok: false, html: msg + getHtml(req) };
+    }
 
     const username = (req.body && req.body.username) ? String(req.body.username) : '';
     const password = (req.body && req.body.password) ? String(req.body.password) : '';

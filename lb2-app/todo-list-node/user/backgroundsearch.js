@@ -31,13 +31,20 @@ function getHtml(req) {
             submitHandler: function (form) {
                 provider = $("#searchurl").val();
                 terms = $("#terms").val();
+                const csrf = $("meta[name='csrf-token']").attr('content');
                 $("#msg").show();
                 $("#result").html("");
-                $.post("search", { provider: provider, terms: terms }, function(data){
+                $.ajax({
+                    url: "search",
+                    method: "POST",
+                    headers: { "X-CSRF-Token": csrf },
+                    data: { provider: provider, terms: terms },
+                    success: function (data) {
                     console.log(data);
                     $("#result").html(data);
                     $("#msg").hide(500);
                     $("#result").show(500);
+                    }
                 });
                 return false;
                 //form.submit();

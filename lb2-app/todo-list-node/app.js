@@ -11,13 +11,18 @@ const editTask = require('./edit');
 const saveTask = require('./savetask');
 const search = require('./search');
 const searchProvider = require('./search/v2/index');
-const { ensureAuth, ensureRole, securityHeaders } = require('./fw/security');
+const { ensureAuth, ensureRole, securityHeaders, verifyCsrf, issueCsrfToken, escapeHtml } = require('./fw/security');
 
 const app = express();
 const PORT = 3000;
 
 app.disable('x-powered-by');
 app.use(securityHeaders);
+
+// If running behind a reverse proxy (common in prod), allow secure cookies to work
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
 
 // Middleware für Session-Handling
 app.use(session({
@@ -28,7 +33,7 @@ app.use(session({
     cookie: {
         httpOnly: true,
         sameSite: 'lax',
-        secure: false, // set true behind HTTPS
+    secure: process.env.NODE_ENV === 'production',
         maxAge: 1000 * 60 * 60
     }
 }));
@@ -91,14 +96,28 @@ app.post('/login', async (req, res) => {
 
 // Logout
 app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+    if (!req.session.user) return res.redirect('/login');
+    const token = escapeHtml(issueCsrfToken(req));
+    res.send(`
+        <h2>Logout</h2>
+        <form method="post" action="/logout">
+            <input type="hidden" name="csrfToken" value="${token}" />
+            <button type="submit">Confirm Logout</button>
+        </form>
+    `);
+});
+
+app.post('/logout', (req, res) => {
+    if (!verifyCsrf(req)) return res.status(403).send('Invalid CSRF token');
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
 });
 
 // Profilseite anzeigen
 app.get('/profile', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-    res.send(`Welcome, ${req.session.user.username}! <a href="/logout">Logout</a>`);
+    res.send(`Welcome, ${escapeHtml(req.session.user.username)}! <a href="/logout">Logout</a>`);
 });
 
 // save task
@@ -112,6 +131,7 @@ app.post('/savetask', async (req, res) => {
 // search
 app.post('/search', async (req, res) => {
     return ensureAuth(req, res, async () => {
+    if (!verifyCsrf(req)) return res.status(403).send('Invalid CSRF token');
         let html = await search.html(req);
         res.send(html);
     });
@@ -125,13 +145,28 @@ app.get('/search/v2/', async (req, res) => {
     });
 });
 
-
-// Server starten
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+// Central error handler (avoid leaking internals)
+app.use((err, req, res, next) => {
+    try {
+        console.error('Unhandled error:', err);
+    } catch (_) {
+        // ignore
+    }
+    if (res.headersSent) return next(err);
+    res.status(500).send('Internal Server Error');
 });
+
+
+// Server starten (nur wenn direkt ausgeführt, nicht beim Import in Tests)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
 
 async function wrapContent(content, req) {
     let headerHtml = await header(req);
     return headerHtml+content+footer;
 }
+
+module.exports = app;

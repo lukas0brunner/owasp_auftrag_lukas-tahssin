@@ -106,16 +106,33 @@ Wichtige Codeänderungen (Auswahl):
 
 Zusätzliche Fixes (Ergänzungen, Phase 1):
 
-- `login.js`: CSRF-Prüfung im Login-Handler (Token wird aktuell nur ausgegeben)
-- `app.js`: Logout von GET auf POST umstellen + CSRF; Cookie-Flag `secure` abhängig von `NODE_ENV`
+Folgende Punkte aus den zusätzlichen Findings (13–20) habe ich **im Code umgesetzt**:
+
+- `login.js`: CSRF-Prüfung im Login-Handler (`verifyCsrf(req)`)
+- `app.js`: Logout-Flow gehärtet: `GET /logout` zeigt Bestätigung, `POST /logout` führt Logout aus (CSRF-geschützt)
+- `app.js`: Cookie-Flag `secure` abhängig von `NODE_ENV` + `trust proxy` in Production
 - `app.js`: `/profile` Username konsequent via `escapeHtml()` ausgeben
-- `fw/security.js`: CSP an App anpassen (oder Inline-JS entfernen)
-- `fw/header.js`: CDN Scripts mit SRI oder lokal ausliefern
+- `app.js` + `user/backgroundsearch.js` + `fw/header.js`: CSRF-Schutz für `/search` (AJAX sendet `X-CSRF-Token` via Meta-Tag)
+- `search.js`: DoS-Risiko reduziert: künstliche Verzögerung nur noch optional über `DEMO_SLOW_SEARCH=1`
+- `search.js`: HTTP Self-Call entfernt: direkter Call von `searchProvider.search(req)`
+- `fw/security.js`: CSP an App angepasst (Übergangslösung, solange Inline-JS/CDN genutzt wird)
+
+Status (Stand 23.03.2026):
+
+- Alle Findings 1–23 sind im Code adressiert.
+- Für Finding 22 wurden Minimal-Regressionstests ergänzt (RBAC Smoke-Test).
 
 ## 6. Verifikation
 
 - `npm install` erfolgreich
 - Syntax Check erfolgreich (`node -c` für zentrale Dateien)
+
+Zusätzliche Smoke-/Runtime-Checks:
+
+- `GET /login` liefert Security Headers inkl. CSP (curl)
+- `/search` akzeptiert nur Requests mit CSRF Header `X-CSRF-Token`
+- `/profile` gibt Username encoded aus
+- Logout ist nur noch über POST (mit CSRF) vollständig ausführbar
 
 ## 7. Offene Punkte / Next Steps
 

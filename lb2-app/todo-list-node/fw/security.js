@@ -37,7 +37,12 @@ function ensureRole(role) {
 
 function issueCsrfToken(req) {
     if (!req.session) return '';
-    if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+    // Token should be a single-line ASCII string to safely embed in HTML attributes.
+    // Defensive normalization: remove any accidental whitespace/newlines from older session values.
+    if (!req.session.csrfToken) {
+        req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+    }
+    req.session.csrfToken = String(req.session.csrfToken).replace(/[\r\n\t\f\v ]+/g, '');
     return req.session.csrfToken;
 }
 
@@ -54,10 +59,12 @@ function securityHeaders(req, res, next) {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-    // Keep CSP conservative because app uses inline scripts today
+    // CSP: app currently uses inline scripts and loads JS from cdnjs.
+    // For LB2 Phase 1 we keep this as a transitional policy; next step is to
+    // move inline JS to /public and remove 'unsafe-inline' + external hosts.
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+        "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
     );
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
     next();
