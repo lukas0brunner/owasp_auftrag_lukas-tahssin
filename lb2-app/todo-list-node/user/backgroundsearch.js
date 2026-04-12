@@ -19,42 +19,37 @@ function getHtml(req) {
     </div>
     <script>
         $(document).ready(function () {
-        $('#form').validate({
-            rules: {
-                terms: {
-                    required: true
-                }
-            },
-            messages: {
-                title: 'Please enter search terms.',
-            },
-            submitHandler: function (form) {
-                provider = $("#searchurl").val();
-                terms = $("#terms").val();
-                const csrf = $("meta[name='csrf-token']").attr('content');
-                $("#msg").show();
-                $("#result").html("");
-                $.ajax({
-                    url: "search",
-                    method: "POST",
-                    headers: { "X-CSRF-Token": csrf },
-                    data: { provider: provider, terms: terms },
-                    success: function (data) {
-                    console.log(data);
-                    $("#result").html(data);
-                    $("#msg").hide(500);
-                    $("#result").show(500);
+            $('#form').validate({
+                rules: {
+                    terms: {
+                        required: true
                     }
-                });
-                return false;
-                //form.submit();
-            }
+                },
+                messages: {
+                    title: 'Please enter search terms.',
+                },
+                submitHandler: function (form) {
+                    const provider = $("#searchurl").val();
+                    const terms = $("#terms").val();
+                    const csrfToken = $("meta[name='csrf-token']").attr('content');
+
+                    $("#msg").show();
+                    $("#result").html("");
+
+                    $.post("search", { provider: provider, terms: terms, csrfToken: csrfToken }, function(data){
+                        $("#result").html(data);
+                        $("#msg").hide(500);
+                        $("#result").show(500);
+                    });
+
+                    return false;
+                }
+            });
         });
-    });
     </script>
 </section>`;
 }
 
 module.exports = {
     html: getHtml
-}
+};

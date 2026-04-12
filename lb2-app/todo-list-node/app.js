@@ -12,6 +12,7 @@ const saveTask = require('./savetask');
 const search = require('./search');
 const searchProvider = require('./search/v2/index');
 const { ensureAuth, ensureRole, securityHeaders, verifyCsrf, issueCsrfToken, escapeHtml } = require('./fw/security');
+const accountDelete = require('./account/delete');
 
 const app = express();
 const PORT = 3000;
@@ -117,7 +118,72 @@ app.post('/logout', (req, res) => {
 // Profilseite anzeigen
 app.get('/profile', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-    res.send(`Welcome, ${escapeHtml(req.session.user.username)}! <a href="/logout">Logout</a>`);
+    res.send(`
+        <h2>Profile</h2>
+        <p>Welcome, ${escapeHtml(req.session.user.username)}.</p>
+        <ul>
+            <li><a href="/logout">Logout</a></li>
+            <li><a href="/account/delete">Delete account</a></li>
+        </ul>
+    `);
+});
+
+// Account delete (GET confirm)
+app.get('/account/delete', async (req, res) => {
+    return ensureAuth(req, res, async () => {
+        const content = await accountDelete.getDeleteAccountHtml(req);
+        const html = await wrapContent(content, req);
+        res.send(html);
+    });
+});
+
+// Account delete (POST execute)
+app.post('/account/delete', async (req, res) => {
+    return ensureAuth(req, res, async () => {
+        const result = await accountDelete.handleDeleteAccount(req);
+        if (!result.ok) {
+            const content = `<span class='info info-error'>${escapeHtml(result.message || 'Delete failed')}</span>` + await accountDelete.getDeleteAccountHtml(req);
+            const html = await wrapContent(content, req);
+            return res.status(400).send(html);
+        }
+
+        req.session.destroy(() => {
+            res.redirect('/login');
+        });
+    });
+});
+
+// Delete task (existing UI link)
+app.get('/delete', async (req, res) => {
+    return ensureAuth(req, res, async () => {
+        const id = req.query && req.query.id ? String(req.query.id) : '';
+        const token = escapeHtml(issueCsrfToken(req));
+        const content = `
+            <h2>Delete task</h2>
+            <p>Do you really want to delete this task?</p>
+            <form method="post" action="/delete">
+                <input type="hidden" name="csrfToken" value="${token}" />
+                <input type="hidden" name="id" value="${escapeHtml(id)}" />
+                <button type="submit">Delete</button>
+            </form>
+        `;
+        res.send(await wrapContent(content, req));
+    });
+});
+
+app.post('/delete', async (req, res) => {
+    return ensureAuth(req, res, async () => {
+        if (!verifyCsrf(req)) return res.status(403).send('Invalid CSRF token');
+        const taskId = req.body && req.body.id ? parseInt(req.body.id, 10) : NaN;
+        if (!Number.isInteger(taskId) || taskId <= 0) return res.status(400).send('Invalid id');
+
+        // Ownership enforced
+        await require('./fw/db').executeStatement(
+            'DELETE FROM tasks WHERE id = ? AND userID = ?',
+            [taskId, req.session.user.id]
+        );
+        res.redirect('/');
+    });
 });
 
 // save task

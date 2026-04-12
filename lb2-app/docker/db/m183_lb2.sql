@@ -71,6 +71,21 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `audit_log`
+--
+
+CREATE TABLE `audit_log` (
+  `ID` bigint(20) NOT NULL,
+  `event_type` varchar(64) NOT NULL,
+  `user_id` bigint(20) NULL,
+  `ip` varchar(64) NULL,
+  `user_agent` varchar(255) NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
 --
 -- Indizes der exportierten Tabellen
 --
@@ -100,6 +115,14 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`ID`);
 
 --
+-- Indizes für die Tabelle `audit_log`
+--
+ALTER TABLE `audit_log`
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `idx_audit_event_type` (`event_type`),
+  ADD KEY `idx_audit_user_id` (`user_id`);
+
+--
 -- AUTO_INCREMENT für exportierte Tabellen
 --
 
@@ -119,6 +142,12 @@ ALTER TABLE `tasks`
 -- AUTO_INCREMENT für Tabelle `users`
 --
 ALTER TABLE `users`
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT für Tabelle `audit_log`
+--
+ALTER TABLE `audit_log`
   MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
