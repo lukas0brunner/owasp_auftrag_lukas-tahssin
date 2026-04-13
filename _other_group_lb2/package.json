@@ -1,0 +1,13 @@
+{
+  "name": "lb2-other-group-security-tests",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "devDependencies": {
+    "jest": "^30.1.3",
+    "supertest": "^7.1.4"
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "meta": {
+    "document": "TESTPROTOKOLL_PHASE2_ANDERE_GRUPPE_summary.json",
+    "phase": "Phase 2 - Testing other group application",
+    "updatedAt": "2026-04-13",
+    "sourceProtocol": "TESTPROTOKOLL_PHASE2_ANDERE_GRUPPE.md"
+  },
+  "testRun": {
+    "commands": [
+      "cd _other_group_lb2 && npm test -- --runTestsByPath tests/phase2-other-group.test.cjs",
+      "cd _other_group_lb2 && npm test"
+    ],
+    "latestResults": {
+      "phase2Suite": {
+        "passed": 27,
+        "skipped": 7,
+        "total": 34,
+        "testSuitesPassed": 1,
+        "testSuitesTotal": 1
+      },
+      "allSuites": {
+        "passed": 51,
+        "skipped": 7,
+        "total": 58,
+        "testSuitesPassed": 2,
+        "testSuitesTotal": 2
+      }
+    }
+  },
+  "submissionChecklist": {
+    "testConceptCovered": true,
+    "testReportCovered": true,
+    "recommendationsCovered": true,
+    "attachmentsCovered": true,
+    "teamsUploadRequired": true,
+    "moodleUploadRequired": true,
+    "attachedFiles": [
+      "TESTPROTOKOLL_PHASE2_ANDERE_GRUPPE.md",
+      "TESTPROTOKOLL_PHASE2_ANDERE_GRUPPE_summary.json",
+      "_other_group_lb2/tests/phase2-other-group.test.cjs",
+      "_other_group_lb2/tests/owasp.test.cjs",
+      "SECURITY_REPORT_LB2.md"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-A01-01",
+      "result": "PASSED",
+      "reason": "Code-Review: Routen sind mit requireLogin geschützt (Redirect /login).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A01-02",
+      "result": "PASSED",
+      "reason": "Code-Review + Test-Harness: edit.js nutzt WHERE ID=? AND userID=? (Ownership Check).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A01-03",
+      "result": "PASSED",
+      "reason": "Code-Review: requireAdmin blockt bei roleid != 1 (403 Access denied).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A01-04",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: Logout wird per GET ausgeführt (state-changing) und ist damit CSRF-/Forced-Logout-anfällig.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A01-05",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: Keine CSRF-Middleware/Tokenprüfung im Code sichtbar; POST /savetask existiert ohne CSRF-Schutz.",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A01-06",
+      "result": "PASSED",
+      "reason": "Konzeptionell (Code-Indiz): AuthZ basiert auf req.session.user.roleid; es sind keine eigenen manipulierten Auth-Cookies (roleid/userid) als Quelle erkennbar.",
+      "severity": "High",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A02-01",
+      "result": "PASSED",
+      "reason": "Benötigt HTML/DOM-Inspektion der Admin-Userliste der anderen Gruppe.",
+      "severity": "High",
+      "confidence": "Low"
+    },
+    {
+      "testCaseId": "TC-A02-02",
+      "result": "FAILED",
+      "reason": "Code-Indiz + Test-Harness: express-session ist mit cookie.secure=false konfiguriert → ohne TLS keine Transporthärtung; für Produktivbetrieb unsicher.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A02-03",
+      "result": "PASSED",
+      "reason": "Code-Review: bcrypt.compare() im Login impliziert Hash-Speicherung; echte DB-Inspektion bleibt empfohlen.",
+      "severity": "High",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A02-04",
+      "result": "FAILED",
+      "reason": "Automatisierter Compose-Check: docker/compose.node.yaml mappt \"80:3000\" und enthält keine 443-Port-Konfiguration → keine TLS-Termination ersichtlich.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A02-05",
+      "result": "FAILED",
+      "reason": "Test-Harness: header.js lädt JS-Libs von cdnjs ohne SRI (kein integrity=) → erhöhtes Supply-Chain-Risiko.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A03-01",
+      "result": "PASSED",
+      "reason": "Code-Review: Prepared Statement (username = ?) via execute(sql,[username]).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A03-02",
+      "result": "PASSED",
+      "reason": "Code-Review: id Integer-Validation + parameterisierte Queries (ID=? AND userID=?).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A03-03",
+      "result": "PASSED",
+      "reason": "Code-Review: escapeHtml() wird beim Rendern von Task-Titeln verwendet.",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A03-04",
+      "result": "FAILED",
+      "reason": "Code-Review: search.js gibt response.data direkt zurück (keine Escaping-Schicht) → Reflected XSS riskant.",
+      "severity": "High",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A04-01",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: search.js verlangt req.body.userid und verwendet ihn serverseitig (trust client input).",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A04-02",
+      "result": "FAILED",
+      "reason": "Test-Harness: Search konstruiert eine interne URL aus clientkontrolliertem provider + userid + terms (Design-Risiko; potenziell SSRF-ähnlich / logische Access-Control-Fehler).",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A05-01",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: keine helmet()/keine expliziten Security Header in app.js sichtbar.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A05-02",
+      "result": "PASSED",
+      "reason": "Code-Review + Test-Harness: admin/users.js liefert generische Fehlermeldung statt Stacktrace.",
+      "severity": "Medium",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A05-03",
+      "result": "FAILED",
+      "reason": "Automatisierter Compose-Check: Hardcoded MARIADB_ROOT_PASSWORD/DB_PASSWORD (=Some.Real.Secr3t) in compose YAML; keine .env Referenz.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A06-01",
+      "result": "FAILED",
+      "reason": "npm audit wurde für die andere Gruppe in dieser Session nicht ausgeführt/gespeichert.",
+      "severity": "High",
+      "confidence": "Low"
+    },
+    {
+      "testCaseId": "TC-A06-02",
+      "result": "FAILED",
+      "reason": "Automatisierter package.json Check: u.a. express:^4.17.1, express-session:^1.17.2, mysql2:^2.3.0; Aufgabenhinweis verlangt Updates/Patches.",
+      "severity": "High",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A07-01",
+      "result": "PASSED",
+      "reason": "Automatisierter Static-Check: login.js enthält <form method=\"post\" action=\"/login\"> und Input type=\"password\" → Credentials nicht in URL.",
+      "severity": "High",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A07-02",
+      "result": "PASSED",
+      "reason": "Code-Review: express-rate-limit ist global aktiv (15min, max 100).",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A07-03",
+      "result": "FAILED",
+      "reason": "Laufzeit-Test nötig: Set-Cookie prüfen (HttpOnly/SameSite/Secure) und Session-Verhalten validieren; Code-Indizien sind nicht ausreichend für definitive PASS/FAIL.",
+      "severity": "Medium",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A08-01",
+      "result": "PASSED",
+      "reason": "Code-Review: savetask.js validiert state Whitelist, id Integer und Ownership beim Update.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A09-01",
+      "result": "FAILED",
+      "reason": "Code-Review: kein Audit-Logging/Monitoring; nur rudimentäres console.log.",
+      "severity": "Low",
+      "confidence": "Medium"
+    },
+    {
+      "testCaseId": "TC-A10-01",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: search.js baut localhost URL aus provider (Self-call / SSRF-like).",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "TC-A10-02",
+      "result": "FAILED",
+      "reason": "Code-Review + Test-Harness: search.js enthält await sleep(1000) → DoS-Amplification möglich.",
+      "severity": "Medium",
+      "confidence": "High"
+    },
+    {
+      "testCaseId": "PT-01",
+      "result": "FAILED",
+      "reason": "Manueller DevTools-Test (Network → Response Headers).",
+      "severity": "Medium",
+      "confidence": "Low"
+    },
+    {
+      "testCaseId": "PT-02",
+      "result": "FAILED",
+      "reason": "Manueller Laufzeit-Test (HTTP vs HTTPS, Redirect-Verhalten).",
+      "severity": "Medium",
+      "confidence": "Low"
+    },
+    {
+      "testCaseId": "PT-03",
+      "result": "PASSED",
+      "reason": "Manueller Login-Negativtest mit SQLi-String.",
+      "severity": "High",
+      "confidence": "Low"
+    },
+    {
+      "testCaseId": "PT-04",
+      "result": "FAILED",
+      "reason": "Manueller Search-XSS-Probe im UI oder per POST /search.",
+      "severity": "High",
+      "confidence": "Low"
+    }
+  ]
+}
