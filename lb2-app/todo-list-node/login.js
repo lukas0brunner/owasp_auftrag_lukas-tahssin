@@ -1,11 +1,14 @@
 const db = require('./fw/db');
-const { escapeHtml, issueCsrfToken, verifyCsrf } = require('./fw/security');
+const { escapeHtml, issueCsrfToken, verifyCsrf, verifyPassword } = require('./fw/security');
 
 // Simple in-memory rate limit (good for LB2 demo; use Redis in prod)
 const loginAttempts = new Map();
+function getClientIp(req) {
+    return (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim() || 'unknown';
+}
+
 function getClientKey(req) {
-    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
-    return ip || 'unknown';
+    return getClientIp(req);
 }
 
 function canAttemptLogin(req) {
@@ -34,6 +37,7 @@ async function handleLogin(req) {
     const password = (req.body && req.body.password) ? String(req.body.password) : '';
 
     if (!canAttemptLogin(req)) {
+        await auditLog('login_rate_limited', null, req);
         msg = "<span class='info info-error'>Too many login attempts. Try again later.</span>";
         return { ok: false, html: msg + getHtml(req) };
     }
@@ -41,11 +45,13 @@ async function handleLogin(req) {
     if (username && password) {
         const result = await validateLogin(username, password);
         if (result.valid) {
+            await auditLog('login_success', result.userId, req);
             return {
                 ok: true,
                 user: { id: result.userId, username: result.username, role: result.role }
             };
         }
+        await auditLog('login_failed', null, req);
         msg = "<span class='info info-error'>Invalid username or password</span>";
     }
 
@@ -55,8 +61,6 @@ async function handleLogin(req) {
 async function validateLogin (username, password) {
     let result = { valid: false, userId: 0, username: '', role: 'user' };
 
-    // NOTE: passwords are currently stored in plaintext in DB in this project.
-    // For LB2 Phase 1 fix we at least parameterize the query.
     const rows = await db.executeStatement(
         'SELECT users.id as id, users.username as username, users.password as password, roles.title as roleTitle FROM users ' +
         'LEFT JOIN permissions ON users.id = permissions.userID ' +
@@ -67,15 +71,29 @@ async function validateLogin (username, password) {
 
     if (rows.length === 0) return result;
 
-    const db_password = rows[0].password;
-    if (password === db_password) {
-        result.userId = rows[0].id;
+    // verifyPassword supports both PBKDF2 hashes and legacy plaintext (migration)
+    if (verifyPassword(password, rows[0].password)) {
+        result.userId   = rows[0].id;
         result.username = rows[0].username;
-        result.role = (rows[0].roleTitle || 'user').toLowerCase() === 'admin' ? 'admin' : 'user';
-        result.valid = true;
+        result.role     = (rows[0].roleTitle || 'user').toLowerCase() === 'admin' ? 'admin' : 'user';
+        result.valid    = true;
     }
 
     return result;
+}
+
+// ── Audit logging helper ────────────────────────────────────────────────────
+async function auditLog(eventType, userId, req) {
+    try {
+        const ip        = getClientIp(req);
+        const userAgent = String(req.headers && req.headers['user-agent'] || '').slice(0, 255);
+        await db.executeStatement(
+            'INSERT INTO audit_log (event_type, user_id, ip, user_agent) VALUES (?, ?, ?, ?)',
+            [eventType, userId || null, ip, userAgent]
+        );
+    } catch (_) {
+        // audit failures must not block login flow
+    }
 }
 
 function getHtml(req) {

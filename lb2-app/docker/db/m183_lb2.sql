@@ -159,8 +159,10 @@ insert into roles (ID, title) values (2, 'User');
 insert into roles (ID, title) values (1, 'Admin');
 
 
-insert into users (ID, username, password) values (1, 'admin1', 'Awesome.Pass34');
-insert into users (ID, username, password) values (2, 'user1', 'Amazing.Pass23');
+-- Passwords are PBKDF2-SHA512 hashes (100k iterations).
+-- Plaintext: admin1 → 'Awesome.Pass34' | user1 → 'Amazing.Pass23'
+insert into users (ID, username, password) values (1, 'admin1', 'pbkdf2:100000:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6:71f0f491cc578fcd9427df479102b3ad19f2bbdc5c09c4ed666a8dd082683fdeed16e5f0ae35ea82bb36631a79605dafa5954d2e82698dd3fd29916c107cf270');
+insert into users (ID, username, password) values (2, 'user1',  'pbkdf2:100000:b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7:8e404a68efffde9575658d1b202091d91ce18eb9c799dd171c656fb6c4d2f2710b67c62e75fbf547501153ef874798b66155d16a0feb98037a4160b2265e38f1');
 
 insert into permissions(ID, userID, roleID) values(null, 1, 1);
 insert into permissions(ID, userID, roleID) values(null, 2, 2);

@@ -7,9 +7,13 @@ services:
     user: "node"
     working_dir: /home/node/app
     container_name: m183-lb2-web
+    env_file:
+      - .env
     environment:
       - DBSERVER=m183-lb2-db
       - NODE_ENV=production
+      - DB_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
     ports:
       - "8080:3000"
     volumes:

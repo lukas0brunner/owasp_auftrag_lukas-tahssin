@@ -1,5 +1,5 @@
 const db = require('../fw/db');
-const { escapeHtml, issueCsrfToken, verifyCsrf } = require('../fw/security');
+const { escapeHtml, issueCsrfToken, verifyCsrf, verifyPassword } = require('../fw/security');
 
 function getClientIp(req) {
     const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
@@ -39,11 +39,9 @@ async function handleDeleteAccount(req) {
     const password = (req.body && req.body.password) ? String(req.body.password) : '';
     if (!password) return { ok: false, message: 'Password required' };
 
-    // NOTE: Passwords are plaintext in the given DB. This confirms via equality.
-    // Next step (Phase 2/3): migrate to bcrypt/argon2.
     const rows = await db.executeStatement('SELECT id, password FROM users WHERE id = ? LIMIT 1', [userId]);
     if (rows.length === 0) return { ok: false, message: 'User not found' };
-    if (password !== rows[0].password) {
+    if (!verifyPassword(password, rows[0].password)) {
         await db.executeStatement(
             'INSERT INTO audit_log (event_type, user_id, ip, user_agent) VALUES (?, ?, ?, ?)',
             ['account_delete_password_failed', userId, getClientIp(req), (req.headers['user-agent'] || '').toString().slice(0, 255)]

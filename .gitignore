@@ -1,1 +1,4 @@
 /node_modules
+lb2-app/todo-list-node/node_modules
+# Docker secrets — copy .env.example → .env and fill in real values
+lb2-app/docker/.env
